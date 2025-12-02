@@ -154,6 +154,7 @@ const RFTFluency3D: React.FC = () => {
     const [currentStimulus, setCurrentStimulus] = useState<Stimulus | null>(null);
     const [isSwapped, setIsSwapped] = useState(false);
     const [stimulusHistory, setStimulusHistory] = useState<Stimulus[]>([]);
+    void stimulusHistory; 
 
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedbackColor, setFeedbackColor] = useState("");
