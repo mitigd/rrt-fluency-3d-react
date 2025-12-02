@@ -154,7 +154,6 @@ const RFTFluency3D: React.FC = () => {
     const [currentStimulus, setCurrentStimulus] = useState<Stimulus | null>(null);
     const [isSwapped, setIsSwapped] = useState(false);
     const [stimulusHistory, setStimulusHistory] = useState<Stimulus[]>([]);
-    void stimulusHistory; 
 
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedbackColor, setFeedbackColor] = useState("");
@@ -178,16 +177,20 @@ const RFTFluency3D: React.FC = () => {
         const scene = new THREE.Scene();
         sceneRef.current = scene;
 
-        // Initial setup with dynamic Z based on aspect ratio
-        const aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
-        const initialZ = aspect > 1 ? 8.5 : 6; // Push camera back in landscape
+        const width = containerRef.current.clientWidth;
+        const height = containerRef.current.clientHeight;
+        const aspect = width / height;
+
+        // Smart Zoom Logic: Only zoom out if aspect is landscape AND height is small (mobile landscape)
+        const isMobileLandscape = aspect > 1 && height < 600;
+        const initialZ = isMobileLandscape ? 8.5 : 6; 
 
         const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
         camera.position.z = initialZ;
         cameraRef.current = camera;
 
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+        renderer.setSize(width, height);
         renderer.setPixelRatio(window.devicePixelRatio);
         containerRef.current.appendChild(renderer.domElement);
         rendererRef.current = renderer;
@@ -235,17 +238,18 @@ const RFTFluency3D: React.FC = () => {
 
         const handleResize = () => {
             if (!containerRef.current || !camera || !renderer) return;
-            const width = containerRef.current.clientWidth;
-            const height = containerRef.current.clientHeight;
-            const newAspect = width / height;
+            const w = containerRef.current.clientWidth;
+            const h = containerRef.current.clientHeight;
+            const newAspect = w / h;
             
             camera.aspect = newAspect;
-            // Adjust camera Z position to ensure object fits in landscape mode (mobile landscape)
-            // When height is small relative to width, the object appears larger vertically, so we back up.
-            camera.position.z = newAspect > 1 ? 8.5 : 6; 
+            
+            // Re-apply smart zoom logic on resize
+            const isMobLandscape = newAspect > 1 && h < 600;
+            camera.position.z = isMobLandscape ? 8.5 : 6;
             
             camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
+            renderer.setSize(w, h);
         };
 
         window.addEventListener("resize", handleResize);
@@ -822,7 +826,7 @@ const RFTFluency3D: React.FC = () => {
                 <div className="absolute inset-0 z-10 pointer-events-none">
 
                     {/* HUD */}
-                    <div className="absolute top-6 z-30 left-1/2 -translate-x-1/2 flex items-center gap-4 md:gap-6 px-4 md:px-6 py-2 md:py-3 rounded-xl shadow-lg border pointer-events-auto backdrop-blur-md transition-all duration-300 max-w-full origin-top scale-90 md:scale-100 landscape:scale-[0.80] landscape:origin-top"
+                    <div className="absolute top-6 z-30 left-1/2 -translate-x-1/2 flex items-center gap-4 md:gap-6 px-4 md:px-6 py-2 md:py-3 rounded-xl shadow-lg border pointer-events-auto backdrop-blur-md transition-all duration-300 max-w-full origin-top scale-90 md:scale-100 landscape:scale-[0.80] md:landscape:scale-100 landscape:origin-top"
                         style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)', borderColor: colors.border }}>
 
                         <div className="flex gap-4 md:gap-6 pr-4 md:pr-6 border-r" style={{ borderColor: colors.border }}>
@@ -951,16 +955,16 @@ const RFTFluency3D: React.FC = () => {
                     {isPlaying && perspectiveMode && currentStimulus && (
                         <>
                             {currentStimulus.observerPos === 'opposite' ? (
-                                <div className="absolute top-[18%] landscape:top-24 left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideDown_0.5s_ease-out]">
-                                    <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10">
+                                <div className="absolute top-[18%] landscape:top-24 md:landscape:top-[18%] left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideDown_0.5s_ease-out]">
+                                    <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10 md:landscape:w-20 md:landscape:h-20">
                                         <path d="M 10 0 Q 50 80 90 0" fill={colors.avatarFill} />
                                         <circle cx="50" cy="60" r="30" fill={isDark ? '#6b6b6b94' : '#04333aff'} />
                                     </svg>
                                     <div className="px-2 py-0.5 bg-white text-black font-black text-xs rounded mt-[-5px] md:mt-[-10px] shadow">THEM</div>
                                 </div>
                             ) : (
-                                <div className="absolute bottom-4 landscape:bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideUp_0.5s_ease-out] pb-4 landscape:pb-0">
-                                    <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10">
+                                <div className="absolute bottom-4 landscape:bottom-2 md:landscape:bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideUp_0.5s_ease-out] pb-4 landscape:pb-0 md:landscape:pb-4">
+                                    <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10 md:landscape:w-20 md:landscape:h-20">
                                         <path d="M 10 100 Q 50 20 90 100" fill={colors.avatarFill} />
                                         <circle cx="50" cy="40" r="30" fill={isDark ? '#62626294' : '#3a0404ff'} />
                                     </svg>
@@ -989,7 +993,7 @@ const RFTFluency3D: React.FC = () => {
                         <>
                             <div onClick={() => handlePhysicalSide('left')}
                                 className="absolute bottom-0 left-0 w-1/2 h-[50%] flex justify-center items-center cursor-pointer pointer-events-auto hover:bg-white/5 border-r border-white/10 transition-colors">
-                                <div className={`w-20 h-20 md:w-24 md:h-24 landscape:w-16 landscape:h-16 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-auto landscape:mx-0
+                                <div className={`w-20 h-20 md:w-24 md:h-24 landscape:w-16 landscape:h-16 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-auto landscape:mx-0 md:landscape:mx-auto
                                         ${isSwapped ? 'bg-red-500/80 border-red-500' : 'bg-green-500/80 border-green-500'}`}>
                                     <span>{isSwapped ? 'NO' : 'YES'}</span>
                                     <span className="text-[0.6rem] font-normal opacity-80 mt-1">D / ←</span>
@@ -997,7 +1001,7 @@ const RFTFluency3D: React.FC = () => {
                             </div>
                             <div onClick={(e) => { e.preventDefault(); handlePhysicalSide('right'); }} onContextMenu={(e) => e.preventDefault()}
                                 className="absolute bottom-0 right-0 w-1/2 h-[50%] flex justify-center items-center cursor-pointer pointer-events-auto hover:bg-white/5 transition-colors">
-                                <div className={`w-20 h-20 md:w-24 md:h-24 landscape:w-16 landscape:h-16 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-auto landscape:mx-0
+                                <div className={`w-20 h-20 md:w-24 md:h-24 landscape:w-16 landscape:h-16 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-auto landscape:mx-0 md:landscape:mx-auto
                                         ${isSwapped ? 'bg-green-500/80 border-green-500' : 'bg-red-500/80 border-red-500'}`}>
                                     <span>{isSwapped ? 'YES' : 'NO'}</span>
                                     <span className="text-[0.6rem] font-normal opacity-80 mt-1">J / →</span>
