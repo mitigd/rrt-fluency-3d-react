@@ -184,7 +184,9 @@ const RFTFluency3D: React.FC = () => {
 
         // Smart Zoom Logic: Only zoom out if aspect is landscape AND height is small (mobile landscape)
         const isMobileLandscape = aspect > 1 && height < 600;
-        const initialZ = isMobileLandscape ? 8.5 : 6; 
+        const isMobilePortrait = aspect < 1 && width < 600;
+        // Increase distance for mobile portrait to fit everything
+        const initialZ = isMobileLandscape ? 7.2 : (isMobilePortrait ? 9.0 : 6); 
 
         const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
         camera.position.z = initialZ;
@@ -247,7 +249,9 @@ const RFTFluency3D: React.FC = () => {
             
             // Re-apply smart zoom logic on resize
             const isMobLandscape = newAspect > 1 && h < 600;
-            camera.position.z = isMobLandscape ? 8.5 : 6;
+            const isMobPortrait = newAspect < 1 && w < 600;
+            const newZ = isMobLandscape ? 7.2 : (isMobPortrait ? 9.0 : 6);
+            if (camera.position.z !== newZ) camera.position.z = newZ;
             
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
@@ -805,7 +809,7 @@ const RFTFluency3D: React.FC = () => {
             style={{ color: colors.text }}>
 
             {/* MAIN GAME CONTAINER WITH BORDER */}
-            <div className="relative w-[95%] h-[90%] rounded-3xl border-4 overflow-hidden shadow-2xl flex flex-col"
+            <div className="relative w-full h-full md:w-[95%] md:h-[90%] md:rounded-3xl border-0 md:border-4 overflow-hidden shadow-2xl flex flex-col"
                 style={{ borderColor: colors.border, backgroundColor: colors.bg }}>
 
                 {/* HEADER (Inside Container) */}
@@ -827,10 +831,14 @@ const RFTFluency3D: React.FC = () => {
                 <div className="absolute inset-0 z-10 pointer-events-none">
 
                     {/* HUD */}
-                    <div className="absolute top-6 z-30 left-1/2 -translate-x-1/2 flex items-center gap-4 md:gap-6 px-4 md:px-6 py-2 md:py-3 rounded-xl shadow-lg border pointer-events-auto backdrop-blur-md transition-all duration-300 max-w-full origin-top scale-90 md:scale-100 landscape:scale-[0.80] md:landscape:scale-100 landscape:origin-top"
-                        style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)', borderColor: colors.border }}>
+                    {/* HUD WRAPPER - Positioning & Scale */}
+                    <div className="absolute top-2 md:top-6 z-30 left-1/2 -translate-x-1/2 flex flex-col items-center transition-all duration-300 max-w-[95%] w-max origin-top scale-[0.80] md:scale-100 landscape:scale-[0.75] md:landscape:scale-100 landscape:origin-top pointer-events-none">
 
-                        <div className="flex gap-4 md:gap-6 pr-4 md:pr-6 border-r" style={{ borderColor: colors.border }}>
+                        {/* VISUAL BOX */}
+                        <div className="flex flex-wrap md:flex-nowrap justify-center items-center gap-y-2 gap-x-3 md:gap-6 px-3 md:px-6 py-2 md:py-3 rounded-xl shadow-lg border pointer-events-auto backdrop-blur-md relative z-10"
+                            style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)', borderColor: colors.border }}>
+
+                        <div className="flex gap-4 md:gap-6 pr-4 md:pr-6 border-r md:border-r-0 lg:border-r border-white/10 md:border-white/10" style={{ borderColor: colors.border }}>
                             <div className="flex flex-col items-center">
                                 <span className="text-[0.65rem] uppercase font-bold tracking-wider" style={{ color: COMMON.dim }}>Rule</span>
                                 <span className="text-lg md:text-xl font-bold" style={{ color: COMMON.accent }}>{currentRule.toUpperCase()}</span>
@@ -850,9 +858,9 @@ const RFTFluency3D: React.FC = () => {
                             </div>
                         )}
 
-                        {/* CLUES */}
-                        {isPlaying && perspectiveMode && currentStimulus && (
-                            <div className={`flex flex-col items-center justify-center px-4 py-2 border-2 rounded-lg min-w-[120px] md:min-w-[140px] animate-pulse ${perspectiveType === 'spatial' ? 'border-[#9c27b0]' : 'border-[#0ea5e9]'}`}
+                        {/* CLUES - Conditional width for mobile - HIDDEN FOR DEICTIC (Seat Position) MODE as per user request */}
+                        {isPlaying && perspectiveMode && currentStimulus && !(perspectiveType === 'spatial' && spatialMatchMode === 'view') && (
+                            <div className={`flex flex-col items-center justify-center px-4 py-2 border-2 rounded-lg min-w-[80px] md:min-w-[140px] animate-pulse order-first md:order-none w-full md:w-auto ${perspectiveType === 'spatial' ? 'border-[#9c27b0]' : 'border-[#0ea5e9]'}`}
                                 style={{ backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.5)' }}>
                                 <div className="text-[0.6rem] font-bold uppercase tracking-wider mb-1" style={{ color: COMMON.dim }}>
                                     {perspectiveType === 'symbolic' ? 'Symbolic Key' : (spatialMatchMode === 'object' ? 'Object Constancy' : 'Seat Position')}
@@ -882,7 +890,7 @@ const RFTFluency3D: React.FC = () => {
                             </div>
                         )}
 
-                        <div className="flex items-center gap-4 pl-4 border-l" style={{ borderColor: colors.border }}>
+                        <div className="flex items-center gap-3 md:gap-4 pl-0 md:pl-4 border-l-0 md:border-l" style={{ borderColor: colors.border }}>
                             <div className="flex flex-col items-center">
                                 <span className="text-[0.65rem] uppercase font-bold tracking-wider mb-1" style={{ color: COMMON.dim }}>N-Back: {nBack}</span>
                                 <div className="flex gap-1">
@@ -900,7 +908,7 @@ const RFTFluency3D: React.FC = () => {
 
                             {!isPlaying ? (
                                 <>
-                                    <button onClick={startGame} className="px-4 py-2 rounded-lg font-bold text-white shadow-lg transform hover:scale-105 transition-all" style={{ backgroundColor: COMMON.accent }}>
+                                    <button onClick={startGame} className="px-3 py-2 rounded-lg font-bold text-white shadow-lg transform hover:scale-105 transition-all text-sm" style={{ backgroundColor: COMMON.accent }}>
                                         Start
                                     </button>
                                     <button onClick={() => setShowSettings(true)} className="px-3 py-2 rounded-lg font-semibold text-sm border hover:bg-black/5" style={{ borderColor: colors.border }}>
@@ -916,6 +924,18 @@ const RFTFluency3D: React.FC = () => {
                                 </button>
                             )}
                         </div>
+                    </div>
+
+                        {/* THEM AVATAR (ATTACHED BEHIND) */}
+                        {isPlaying && perspectiveMode && currentStimulus && currentStimulus.observerPos === 'opposite' && (
+                            <div className="absolute top-[95%] left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideDown_0.5s_ease-out] origin-top -z-10">
+                                <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10 md:landscape:w-20 md:landscape:h-20">
+                                    <path d="M 10 0 Q 50 80 90 0" fill={colors.avatarFill} />
+                                    <circle cx="50" cy="60" r="30" fill={isDark ? '#6b6b6b94' : '#04333aff'} />
+                                </svg>
+                                <div className="px-2 py-0.5 bg-white text-black font-black text-xs rounded mt-[-5px] md:mt-[-10px] shadow">THEM</div>
+                            </div>
+                        )}
                     </div>
 
                     {/* FOLDING NET KEY */}
@@ -952,27 +972,15 @@ const RFTFluency3D: React.FC = () => {
                         </div>
                     )}
 
-                    {/* THEMED AVATAR INDICATORS */}
-                    {isPlaying && perspectiveMode && currentStimulus && (
-                        <>
-                            {currentStimulus.observerPos === 'opposite' ? (
-                                <div className="absolute top-[18%] landscape:top-24 md:landscape:top-[18%] left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideDown_0.5s_ease-out]">
-                                    <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10 md:landscape:w-20 md:landscape:h-20">
-                                        <path d="M 10 0 Q 50 80 90 0" fill={colors.avatarFill} />
-                                        <circle cx="50" cy="60" r="30" fill={isDark ? '#6b6b6b94' : '#04333aff'} />
-                                    </svg>
-                                    <div className="px-2 py-0.5 bg-white text-black font-black text-xs rounded mt-[-5px] md:mt-[-10px] shadow">THEM</div>
-                                </div>
-                            ) : (
-                                <div className="absolute bottom-4 landscape:bottom-2 md:landscape:bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideUp_0.5s_ease-out] pb-4 landscape:pb-0 md:landscape:pb-4">
-                                    <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10 md:landscape:w-20 md:landscape:h-20">
-                                        <path d="M 10 100 Q 50 20 90 100" fill={colors.avatarFill} />
-                                        <circle cx="50" cy="40" r="30" fill={isDark ? '#62626294' : '#3a0404ff'} />
-                                    </svg>
-                                    <div className="px-2 py-0.5 bg-white text-black font-black text-xs rounded mt-[-5px] md:mt-[-10px] shadow z-20">ME</div>
-                                </div>
-                            )}
-                        </>
+                    {/* THEMED AVATAR INDICATORS (ME ONLY HERE) */}
+                    {isPlaying && perspectiveMode && currentStimulus && currentStimulus.observerPos === 'me' && (
+                        <div className="absolute bottom-2 landscape:bottom-1 md:landscape:bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center animate-[slideUp_0.5s_ease-out] pb-2 landscape:pb-0 md:landscape:pb-4 origin-bottom opacity-90 md:opacity-100">
+                            <svg viewBox="0 0 100 100" className="drop-shadow-lg w-12 h-12 md:w-20 md:h-20 landscape:w-10 landscape:h-10 md:landscape:w-20 md:landscape:h-20">
+                                <path d="M 10 100 Q 50 20 90 100" fill={colors.avatarFill} />
+                                <circle cx="50" cy="40" r="30" fill={isDark ? '#62626294' : '#3a0404ff'} />
+                            </svg>
+                            <div className="px-2 py-0.5 bg-white text-black font-black text-xs rounded mt-[-5px] md:mt-[-10px] shadow z-20">ME</div>
+                        </div>
                     )}
 
                     {/* FEEDBACK & TOASTS */}
@@ -993,19 +1001,19 @@ const RFTFluency3D: React.FC = () => {
                     {isPlaying && (
                         <>
                             <div onClick={() => handlePhysicalSide('left')}
-                                className="absolute bottom-0 left-0 w-1/2 h-[50%] flex justify-center items-center cursor-pointer pointer-events-auto hover:bg-white/5 border-r border-white/10 transition-colors">
-                                <div className={`w-20 h-20 md:w-24 md:h-24 landscape:w-16 landscape:h-16 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-auto landscape:mx-0 md:landscape:mx-auto
+                                className="absolute bottom-0 left-0 w-[40%] h-[60%] flex justify-start items-end p-6 cursor-pointer pointer-events-auto hover:bg-white/5 transition-colors">
+                                <div className={`w-16 h-16 md:w-24 md:h-24 landscape:w-14 landscape:h-14 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-0 landscape:mx-0 md:landscape:mx-auto
                                         ${isSwapped ? 'bg-red-500/80 border-red-500' : 'bg-green-500/80 border-green-500'}`}>
                                     <span>{isSwapped ? 'NO' : 'YES'}</span>
-                                    <span className="text-[0.6rem] font-normal opacity-80 mt-1">D / ←</span>
+                                    <span className="text-[0.6rem] font-normal opacity-80 mt-1 hidden md:block">D / ←</span>
                                 </div>
                             </div>
                             <div onClick={(e) => { e.preventDefault(); handlePhysicalSide('right'); }} onContextMenu={(e) => e.preventDefault()}
-                                className="absolute bottom-0 right-0 w-1/2 h-[50%] flex justify-center items-center cursor-pointer pointer-events-auto hover:bg-white/5 transition-colors">
-                                <div className={`w-20 h-20 md:w-24 md:h-24 landscape:w-16 landscape:h-16 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-auto landscape:mx-0 md:landscape:mx-auto
+                                className="absolute bottom-0 right-0 w-[40%] h-[60%] flex justify-end items-end p-6 cursor-pointer pointer-events-auto hover:bg-white/5 transition-colors">
+                                <div className={`w-16 h-16 md:w-24 md:h-24 landscape:w-14 landscape:h-14 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-0 landscape:mx-0 md:landscape:mx-auto
                                         ${isSwapped ? 'bg-green-500/80 border-green-500' : 'bg-red-500/80 border-red-500'}`}>
                                     <span>{isSwapped ? 'YES' : 'NO'}</span>
-                                    <span className="text-[0.6rem] font-normal opacity-80 mt-1">J / →</span>
+                                    <span className="text-[0.6rem] font-normal opacity-80 mt-1 hidden md:block">J / →</span>
                                 </div>
                             </div>
                         </>
