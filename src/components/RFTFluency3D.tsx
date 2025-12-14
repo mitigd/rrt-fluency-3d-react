@@ -1000,17 +1000,20 @@ const RFTFluency3D: React.FC = () => {
                     {/* TAP ZONES */}
                     {isPlaying && (
                         <>
+                            {/* GRADIENT DIVIDER */}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-[50%] bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
+
                             <div onClick={() => handlePhysicalSide('left')}
-                                className="absolute bottom-0 left-0 w-[40%] h-[60%] flex justify-start items-end p-6 cursor-pointer pointer-events-auto hover:bg-white/5 transition-colors">
-                                <div className={`w-16 h-16 md:w-24 md:h-24 landscape:w-14 landscape:h-14 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-0 landscape:mx-0 md:landscape:mx-auto
+                                className="absolute bottom-0 left-0 w-1/2 h-full flex justify-start items-end p-6 cursor-pointer pointer-events-auto active:bg-white/10 md:hover:bg-white/5 transition-colors">
+                                <div className={`w-16 h-16 md:w-24 md:h-24 landscape:w-14 landscape:h-14 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-0 landscape:mx-0 md:landscape:mx-auto mb-8 landscape:mb-0 md:mb-0 pointer-events-none select-none
                                         ${isSwapped ? 'bg-red-500/80 border-red-500' : 'bg-green-500/80 border-green-500'}`}>
                                     <span>{isSwapped ? 'NO' : 'YES'}</span>
                                     <span className="text-[0.6rem] font-normal opacity-80 mt-1 hidden md:block">D / ←</span>
                                 </div>
                             </div>
                             <div onClick={(e) => { e.preventDefault(); handlePhysicalSide('right'); }} onContextMenu={(e) => e.preventDefault()}
-                                className="absolute bottom-0 right-0 w-[40%] h-[60%] flex justify-end items-end p-6 cursor-pointer pointer-events-auto hover:bg-white/5 transition-colors">
-                                <div className={`w-16 h-16 md:w-24 md:h-24 landscape:w-14 landscape:h-14 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-0 landscape:mx-0 md:landscape:mx-auto
+                                className="absolute bottom-0 right-0 w-1/2 h-full flex justify-end items-end p-6 cursor-pointer pointer-events-auto active:bg-white/10 md:hover:bg-white/5 transition-colors">
+                                <div className={`w-16 h-16 md:w-24 md:h-24 landscape:w-14 landscape:h-14 md:landscape:w-24 md:landscape:h-24 rounded-full flex flex-col items-center justify-center text-xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.3)] border-4 mx-0 landscape:mx-0 md:landscape:mx-auto mb-8 landscape:mb-0 md:mb-0 pointer-events-none select-none
                                         ${isSwapped ? 'bg-green-500/80 border-green-500' : 'bg-red-500/80 border-red-500'}`}>
                                     <span>{isSwapped ? 'YES' : 'NO'}</span>
                                     <span className="text-[0.6rem] font-normal opacity-80 mt-1 hidden md:block">J / →</span>
